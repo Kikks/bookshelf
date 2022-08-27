@@ -125,14 +125,20 @@ class App extends Component {
 			<div className='App'>
 				<div id='main-view'>
 					<div className='bookshelf-container'>
-						{this.state.books.map(book => (
-							<Book
-								key={book.id}
-								deleteBook={this.deleteBook}
-								changeRating={this.changeRating}
-								{...book}
-							/>
-						))}
+						{this.state.books.length === 0 ? (
+							<div className='empty-container'>
+								<span>There are no books to display</span>
+							</div>
+						) : (
+							this.state.books.map(book => (
+								<Book
+									key={book.id}
+									deleteBook={this.deleteBook}
+									changeRating={this.changeRating}
+									{...book}
+								/>
+							))
+						)}
 					</div>
 					<div className='pagination-menu'>{this.createPagination()}</div>
 				</div>
