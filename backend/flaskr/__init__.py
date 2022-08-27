@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, abort, jsonify
+from sqlalchemy import func, or_
 from flask_sqlalchemy import SQLAlchemy  # , or_
 from flask_cors import CORS
 import random
@@ -40,10 +41,20 @@ def create_app(test_config=None):
     def get_books():
         page = request.args.get("page", 1, type=int)
         limit = request.args.get("limit", DEFAULT_BOOKS_LIMIT, type=int)
-        books = Book.query.order_by(Book.id).all()
+        search = request.args.get("search", "", type=str)
+        books = (
+            Book.query.order_by(Book.id)
+            .filter(
+                or_(
+                    func.lower(Book.title).like("%{}%".format(search.lower())),
+                    func.lower(Book.author).like("%{}%".format(search.lower())),
+                )
+            )
+            .all()
+        )
         paginated_books = paginate_books(page, limit, books)
 
-        if len(paginated_books) == 0:
+        if not len(books) == 0 and len(paginated_books) == 0:
             abort(404)
 
         return jsonify(
