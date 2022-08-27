@@ -6,7 +6,17 @@ import random
 
 from models import setup_db, Book
 
-BOOKS_PER_SHELF = 8
+DEFAULT_BOOKS_LIMIT = 8
+
+
+def paginate_books(page, limit, selection):
+    start = (page - 1) * limit
+    end = start + limit
+
+    books = [book.format() for book in selection]
+    current_books = books[start:end]
+
+    return current_books
 
 
 def create_app(test_config=None):
@@ -29,13 +39,19 @@ def create_app(test_config=None):
     @app.route("/books")
     def get_books():
         page = request.args.get("page", 1, type=int)
-        start = (page - 1) * BOOKS_PER_SHELF
-        end = start + BOOKS_PER_SHELF
+        limit = request.args.get("limit", DEFAULT_BOOKS_LIMIT, type=int)
+        books = Book.query.order_by(Book.id).all()
+        paginated_books = paginate_books(page, limit, books)
 
-        books = [book.format() for book in Book.query.order_by(Book.id.desc()).all()]
+        if len(paginated_books) == 0:
+            abort(404)
 
         return jsonify(
-            {"success": True, "books": books[start:end], "total_books": len(books)}
+            {
+                "success": True,
+                "books": paginated_books,
+                "total_books": len(books),
+            }
         )
 
     @app.route("/books/<int:book_id>", methods=["DELETE"])
