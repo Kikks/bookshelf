@@ -79,7 +79,9 @@ def create_app(test_config=None):
             return jsonify(
                 {
                     "success": True,
-                    "message": "Book with id: {} deleted successfully.".format(book_id),
+                    "message": "Book with id: {} has been deleted successfully.".format(
+                        book_id
+                    ),
                 }
             )
         except:
@@ -105,7 +107,9 @@ def create_app(test_config=None):
             return jsonify(
                 {
                     "success": True,
-                    "message": "Book with id: {} updated successfully.".format(book_id),
+                    "message": "Book with id: {} has been updated successfully.".format(
+                        book_id
+                    ),
                 }
             )
         except:
@@ -132,6 +136,7 @@ def create_app(test_config=None):
                 {
                     "success": True,
                     "created": book.id,
+                    "book": book.format(),
                     "message": "Book created successfully.",
                 }
             )

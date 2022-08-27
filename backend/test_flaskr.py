@@ -122,6 +122,7 @@ class BookTestCase(unittest.TestCase):
         self.assertEqual(data["success"], True)
         self.assertTrue(data["created"])
         self.assertTrue(data["message"])
+        self.assertTrue(data["book"])
 
         created_book = Book.query.filter(
             Book.title == self.new_book["title"],
