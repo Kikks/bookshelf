@@ -39,6 +39,7 @@ class BookTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
+        self.assertTrue(data["message"])
         self.assertTrue(data["total_books"])
         self.assertTrue(len(data["books"]))
 
@@ -48,12 +49,16 @@ class BookTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
+        self.assertTrue(data["message"])
 
     def test_books_returned_less_than_or_equal_to_limit(self):
         limit = 5
         res = self.client().get("/books?page=1&limit={}".format(limit))
         data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["message"])
         self.assertLessEqual(len(data["books"]), limit)
 
     def test_update_book_rating(self):
@@ -61,13 +66,27 @@ class BookTestCase(unittest.TestCase):
         bookId = 1
 
         res = self.client().patch("/books/{}".format(bookId), json={"rating": rating})
+        data = json.loads(res.data)
         book = Book.query.filter(Book.id == bookId).one_or_none()
 
-        if book:
-            self.assertTrue(book.format())
-            self.assertEqual(book.format()["rating"], rating)
-        else:
+        if not book:
             self.fail("No book with id: {} exists.".format(bookId))
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["message"])
+        self.assertEqual(book.format()["rating"], rating)
+
+    def test_400_for_failed_update(self):
+        rating = 2
+        bookId = 1
+
+        res = self.client().patch("/books/{}".format(bookId))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(data["message"])
 
     def test_delete_book(self):
         bookId = 2
@@ -79,16 +98,30 @@ class BookTestCase(unittest.TestCase):
         res = self.client().delete("/books/{}".format(bookId))
         data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["message"])
+
         deleted_book = Book.query.filter(Book.id == bookId).one_or_none()
 
         self.assertEqual(deleted_book, None)
+
+    def test_422_if_book_does_not_exist(self):
+        res = self.client().delete("/books/10000")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(data["message"])
 
     def test_create_book(self):
         res = self.client().post("/books", json=self.new_book)
         data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertTrue(data["created"])
+        self.assertTrue(data["message"])
 
         created_book = Book.query.filter(
             Book.title == self.new_book["title"],
@@ -100,6 +133,14 @@ class BookTestCase(unittest.TestCase):
             self.fail("New book was not created.")
 
         self.assertTrue(created_book.format())
+
+    def test_405_if_book_creation_not_allowed(self):
+        res = self.client().post("/books/45")
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data["success"], False)
+        self.assertTrue(data["message"])
 
 
 # Make the tests conveniently executable

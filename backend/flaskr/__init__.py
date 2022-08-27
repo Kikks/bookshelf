@@ -49,6 +49,7 @@ def create_app(test_config=None):
         return jsonify(
             {
                 "success": True,
+                "message": "Books fetched successfully.",
                 "books": paginated_books,
                 "total_books": len(books),
             }
@@ -56,14 +57,22 @@ def create_app(test_config=None):
 
     @app.route("/books/<int:book_id>", methods=["DELETE"])
     def delete_book(book_id):
-        book = Book.query.filter(Book.id == book_id).one_or_none()
+        try:
+            book = Book.query.filter(Book.id == book_id).one_or_none()
 
-        if not book:
-            abort(400)
+            if not book:
+                abort(404)
 
-        book.delete()
+            book.delete()
 
-        return jsonify({"success": True})
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Book with id: {} deleted successfully.".format(book_id),
+                }
+            )
+        except:
+            abort(422)
 
     @app.route("/books/<int:book_id>", methods=["PATCH"])
     def update_book(book_id):
@@ -76,13 +85,20 @@ def create_app(test_config=None):
             if not book:
                 abort(400)
 
-            if rating:
-                book.rating = rating
-                book.update()
+            if not rating:
+                abort(400)
 
-            return jsonify({"success": True})
+            book.rating = int(rating)
+            book.update()
+
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Book with id: {} updated successfully.".format(book_id),
+                }
+            )
         except:
-            abort(500)
+            abort(400)
 
     @app.route("/books", methods=["POST"])
     def create_book():
@@ -101,13 +117,23 @@ def create_app(test_config=None):
 
             book.insert()
 
-            return jsonify({"success": True, "created": book.id})
+            return jsonify(
+                {
+                    "success": True,
+                    "created": book.id,
+                    "message": "Book created successfully.",
+                }
+            )
         except:
             abort(422)
 
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({"success": False, "error": 404, "message": "Not found."}), 404
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({"success": False, "error": 400, "message": "Bad Request."}), 400
 
     @app.errorhandler(500)
     def server_error(error):
