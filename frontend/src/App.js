@@ -73,14 +73,9 @@ class App extends Component {
 
 	searchBooks = search => {
 		$.ajax({
-			url: "/books", //TODO: update request URL
-			type: "POST",
+			url: `${baseUrl}/books?search=${search}`,
+			type: "GET",
 			dataType: "json",
-			contentType: "application/json",
-			data: JSON.stringify({ search: search }),
-			xhrFields: {
-				withCredentials: true
-			},
 			crossDomain: true,
 			success: result => {
 				this.setState({

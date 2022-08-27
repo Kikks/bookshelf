@@ -1,15 +1,26 @@
 #form-view {
-    text-align: center;
+	text-align: center;
 }
 
 label {
-    display: block;
-    margin: 10px 0px;
+	display: block;
+	margin: 10px 0px;
 }
 
 input {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 10px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+}
+
+.search-buttons {
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+}
+
+.search-button {
+	margin: 0;
+	margin-bottom: 10px;
 }
