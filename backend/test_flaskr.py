@@ -158,6 +158,16 @@ class BookTestCase(unittest.TestCase):
             )
             self.assert_(search_term_is_contained_in_title_and_author)
 
+    def test_search_books_with_no_results(self):
+        search_term = "abglablahbglabglagl"
+        res = self.client().get("/books?search={}&limit=5".format(search_term))
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["message"])
+        self.assertEqual(len(data["books"]), 0)
+
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
